@@ -1,6 +1,5 @@
 ﻿using GameLib.Plugin.RiotGames.Model;
 using NvAPIWrapper.Display;
-using RyzenSmu;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using Universal_x86_Tuning_Utility.Scripts.AMD_Backend;
 using Universal_x86_Tuning_Utility.Scripts.ASUS;
 using Universal_x86_Tuning_Utility.Scripts.GPUs.AMD;
 using Universal_x86_Tuning_Utility.Scripts.GPUs.NVIDIA;
@@ -119,8 +119,8 @@ namespace Universal_x86_Tuning_Utility.Scripts
                             {
                                 //Convert value of select cli argument to uint
                                 uint ryzenAdjCommandValue = Convert.ToUInt32(ryzenAdjCommandValueString);
-                                if(ryzenAdjCommandValue <= 0 && !ryzenAdjCommandString.Contains("co")) SMUCommands.applySettings(ryzenAdjCommandString, 0x0);
-                                else SMUCommands.applySettings(ryzenAdjCommandString, ryzenAdjCommandValue);
+                                if(ryzenAdjCommandValue <= 0 && !ryzenAdjCommandString.Contains("co")) SMUCommands.ApplySettings(ryzenAdjCommandString, 0x0);
+                                else SMUCommands.ApplySettings(ryzenAdjCommandString, ryzenAdjCommandValue);
                                 Task.Delay(50);
                             }
                         }

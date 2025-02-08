@@ -21,9 +21,9 @@ using Universal_x86_Tuning_Utility.Scripts;
 using System.Threading.Tasks;
 using System.Threading;
 using Microsoft.Extensions.Logging;
-using RyzenSmu;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
+using Universal_x86_Tuning_Utility.Scripts.AMD_Backend;
 using Universal_x86_Tuning_Utility.Scripts.ASUS;
 using Universal_x86_Tuning_Utility.Views.Pages;
 
@@ -42,22 +42,8 @@ namespace Universal_x86_Tuning_Utility
         private static IHost _host;
 
         public static ASUSWmi wmi;
-        public static XgMobileConnectionService xgMobileConnectionService;
         private static ILogger<App>? _logger;
-
-        /// <summary>
-        /// Gets registered service.
-        /// </summary>
-        /// <typeparam name="T">Type of the service to get.</typeparam>
-        /// <returns>Instance of the service or <see langword="null"/>.</returns>
-        public static T GetService<T>()
-            where T : class
-        {
-            return _host.Services.GetService(typeof(T)) as T;
-        }
-
-        public static string version = "2.3.4";
-        private Mutex mutex;
+        
         private const string MutexName = "UniversalX86TuningUtility";
 
         public static readonly string SCALE_MODELS_JSON_PATH = ".\\ScaleModels.json";
@@ -279,7 +265,7 @@ namespace Universal_x86_Tuning_Utility
         /// </summary>
         private async void OnExit(object sender, ExitEventArgs e)
         {
-           if (Family.TYPE != Family.ProcessorType.Intel) SMUCommands.RyzenAccess.Deinitialize();
+           if (Family.TYPE != Family.ProcessorType.Intel) SMUCommands.RyzenAccess.Dispose();
 
             await _host.StopAsync();
 
