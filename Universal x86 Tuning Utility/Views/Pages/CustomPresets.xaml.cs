@@ -19,34 +19,37 @@ using System.Windows.Shapes;
 using ApplicationCore.Models;
 using Universal_x86_Tuning_Utility.Properties;
 using Universal_x86_Tuning_Utility.Scripts;
-using Universal_x86_Tuning_Utility.Scripts.ASUS;
-using Universal_x86_Tuning_Utility.Scripts.Intel_Backend;
-using Universal_x86_Tuning_Utility.Scripts.Misc;
 using Universal_x86_Tuning_Utility.Services;
+using Universal_x86_Tuning_Utility.Services.Asus;
+using Universal_x86_Tuning_Utility.Services.Intel;
+using Universal_x86_Tuning_Utility.Services.PresetServices;
+using Universal_x86_Tuning_Utility.Services.RyzenAdj;
+using Universal_x86_Tuning_Utility.Services.SystemInfoServices;
 using Wpf.Ui.Common.Interfaces;
 using Wpf.Ui.Controls;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
+using UserControl = Avalonia.Controls.UserControl;
 
 namespace Universal_x86_Tuning_Utility.Views.Pages;
 
 /// <summary>
 /// Interaction logic for CustomPresets.xaml
 /// </summary>
-public partial class CustomPresets : INavigableView<ViewModels.CustomPresetsViewModel>
+public partial class CustomPresetsPage : UserControl
 {
     public ViewModels.CustomPresetsViewModel ViewModel
     {
         get;
     }
 
-    private PresetManager apuPresetManager = new PresetManager(Settings.Default.Path + "apuPresets.json");
-    private PresetManager amdDtCpuPresetManager = new PresetManager(Settings.Default.Path + "amdDtCpuPresets.json");
-    private PresetManager intelPresetManager = new PresetManager(Settings.Default.Path + "intelPresets.json");
+    private PresetService _apuPresetService = new PresetService(Settings.Default.Path + "apuPresets.json");
+    private PresetService _amdDtCpuPresetService = new PresetService(Settings.Default.Path + "amdDtCpuPresets.json");
+    private PresetService _intelPresetService = new PresetService(Settings.Default.Path + "intelPresets.json");
 
     int[] clockRatio = null;
     NumberBox[] intelRatioControls = null;
-    public CustomPresets()
+    public CustomPresetsPage()
     {
         InitializeComponent();
         _ = Tablet.TabletDevices;
@@ -78,9 +81,9 @@ public partial class CustomPresets : INavigableView<ViewModels.CustomPresetsView
         nudIntelCpuBal.Value = 9;
         nudIntelGpuBal.Value = 13;
 
-        apuPresetManager = new PresetManager(Settings.Default.Path + "apuPresets.json");
-        amdDtCpuPresetManager = new PresetManager(Settings.Default.Path + "amdDtCpuPresets.json");
-        intelPresetManager = new PresetManager(Settings.Default.Path + "intelPresets.json");
+        _apuPresetService = new PresetService(Settings.Default.Path + "apuPresets.json");
+        _amdDtCpuPresetService = new PresetService(Settings.Default.Path + "amdDtCpuPresets.json");
+        _intelPresetService = new PresetService(Settings.Default.Path + "intelPresets.json");
 
         if (GetRadeonGPUCount() < 1) sdADLX.Visibility = Visibility.Collapsed;
         if (GetNVIDIAGPUCount() < 1) sdNVIDIA.Visibility = Visibility.Collapsed;
@@ -131,7 +134,7 @@ public partial class CustomPresets : INavigableView<ViewModels.CustomPresetsView
             if (Family.FAM == Family.RyzenFamily.DragonRange) if (Family.CPUName.Contains("Ryzen 9")) sdAmdCCD2CO.Visibility = sdAmdCO.Visibility;
 
             // Get the names of all the stored presets
-            IEnumerable<string> presetNames = apuPresetManager.GetPresetNames();
+            IEnumerable<string> presetNames = _apuPresetService.GetPresetNames();
 
             // Populate a combo box with the preset names
             foreach (string presetName in presetNames)
@@ -158,7 +161,7 @@ public partial class CustomPresets : INavigableView<ViewModels.CustomPresetsView
             if (Family.CPUName.Contains("Ryzen 9")) sdAmdCCD2CO.Visibility = sdAmdCO.Visibility;
 
             // Get the names of all the stored presets
-            IEnumerable<string> presetNames = amdDtCpuPresetManager.GetPresetNames();
+            IEnumerable<string> presetNames = _amdDtCpuPresetService.GetPresetNames();
 
             // Populate a combo box with the preset names
             foreach (string presetName in presetNames)
@@ -185,7 +188,7 @@ public partial class CustomPresets : INavigableView<ViewModels.CustomPresetsView
             sdAmdCpuTune.Visibility = Visibility.Collapsed;
             sdAmdCO.Visibility = Visibility.Collapsed;
 
-            clockRatio = Intel_Management.readClockRatios();
+            clockRatio = WindowsIntelManagementService.ReadClockRatios();
 
             intelRatioControls = new NumberBox[]
             {
@@ -210,7 +213,7 @@ public partial class CustomPresets : INavigableView<ViewModels.CustomPresetsView
                 }
             }
             // Get the names of all the stored presets
-            IEnumerable<string> presetNames = intelPresetManager.GetPresetNames();
+            IEnumerable<string> presetNames = _intelPresetService.GetPresetNames();
 
             // Populate a combo box with the preset names
             foreach (string presetName in presetNames)
@@ -225,27 +228,27 @@ public partial class CustomPresets : INavigableView<ViewModels.CustomPresetsView
         if (Settings.Default.isASUS)
         {
             uint id = 0;
-            if (App.product.Contains("ROG") || App.product.Contains("TUF")) id = ASUSWmi.GPUMux;
-            else id = ASUSWmi.GPUMuxVivo;
+            if (App.product.Contains("ROG") || App.product.Contains("TUF")) id = AsusWmiService.GPUMux;
+            else id = AsusWmiService.GPUMuxVivo;
             int mux = App.wmi.DeviceGet(id);
 
             if (mux > 0) tsASUSUlti.IsChecked = false;
             else if (mux > -1) tsASUSUlti.IsChecked = true;
             else sdAsusUlti.Visibility = Visibility.Collapsed;
 
-            id = ASUSWmi.GPUEco;
+            id = AsusWmiService.GPUEco;
             int eco = App.wmi.DeviceGet(id);
 
             if (eco > -1 && eco < 1) tsASUSEco.IsChecked = false;
             else if (eco > 0) tsASUSEco.IsChecked = true;
             else sdAsusEco.Visibility = Visibility.Collapsed;
 
-            if (App.product.Contains("ROG") || App.product.Contains("TUF")) id = ASUSWmi.PerformanceMode;
-            else id = ASUSWmi.VivoBookMode;
+            if (App.product.Contains("ROG") || App.product.Contains("TUF")) id = AsusWmiService.PerformanceMode;
+            else id = AsusWmiService.VivoBookMode;
             int perfMode = App.wmi.DeviceGet(id);
-            if (perfMode == (int)ASUSWmi.AsusMode.Silent) cbxAsusPower.SelectedIndex = 1;
-            else if (perfMode == (int)ASUSWmi.AsusMode.Balanced) cbxAsusPower.SelectedIndex = 2;
-            else if (perfMode == (int)ASUSWmi.AsusMode.Turbo) cbxAsusPower.SelectedIndex = 3;
+            if (perfMode == (int)AsusWmiService.AsusMode.Silent) cbxAsusPower.SelectedIndex = 1;
+            else if (perfMode == (int)AsusWmiService.AsusMode.Balanced) cbxAsusPower.SelectedIndex = 2;
+            else if (perfMode == (int)AsusWmiService.AsusMode.Turbo) cbxAsusPower.SelectedIndex = 3;
         }
         else
         {
@@ -271,7 +274,7 @@ public partial class CustomPresets : INavigableView<ViewModels.CustomPresetsView
             if (Family.TYPE == Family.ProcessorType.Amd_Apu)
             {
                 // Get the "myPreset" preset
-                Preset myPreset = apuPresetManager.GetPreset(preset);
+                Preset myPreset = _apuPresetService.GetPreset(preset);
 
                 if (myPreset != null)
                 {
@@ -418,7 +421,7 @@ public partial class CustomPresets : INavigableView<ViewModels.CustomPresetsView
             if (Family.TYPE == Family.ProcessorType.Amd_Desktop_Cpu)
             {
                 // Get the "myPreset" preset
-                Preset myPreset = amdDtCpuPresetManager.GetPreset(preset);
+                Preset myPreset = _amdDtCpuPresetService.GetPreset(preset);
 
                 if (myPreset != null)
                 {
@@ -514,7 +517,7 @@ public partial class CustomPresets : INavigableView<ViewModels.CustomPresetsView
             if (Family.TYPE == Family.ProcessorType.Intel)
             {
                 // Get the "myPreset" preset
-                Preset myPreset = intelPresetManager.GetPreset(preset);
+                Preset myPreset = _intelPresetService.GetPreset(preset);
 
                 if (myPreset != null)
                 {
@@ -860,12 +863,12 @@ public partial class CustomPresets : INavigableView<ViewModels.CustomPresetsView
     private void btnUndo_Click(object sender, RoutedEventArgs e)
     {
         tsAmdOC.IsChecked = false;
-        RyzenAdj_To_UXTU.Translate("--disable-oc ");
-        RyzenAdj_To_UXTU.Translate(getCommandValues());
+        RyzenAdjService.Translate("--disable-oc ");
+        RyzenAdjService.Translate(getCommandValues());
         Settings.Default.CommandString = getCommandValues();
         Settings.Default.Save();
         btnUndo.Visibility = Visibility.Collapsed;
-        RyzenAdj_To_UXTU.Translate("--disable-oc ");
+        RyzenAdjService.Translate("--disable-oc ");
     }
 
     private void tsAmdOC_Checked(object sender, RoutedEventArgs e)
