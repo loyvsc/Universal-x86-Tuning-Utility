@@ -12,8 +12,8 @@ public class WindowsCpuControlService : ICpuControlService
     /// </summary>
     public int CurrentPowerLimit { get; private set; }
     
-    public string CpuCommand { get; private set; } = "";
-    public string CoCommand { get; private set; } = "";
+    public string CpuCommand { get; private set; } = string.Empty;
+    public string CoCommand { get; private set; } = string.Empty;
     
     private const int MinCurveOptimiserValue = 0; // CO
     private const int PowerLimitIncrement = 2; // watts
@@ -95,6 +95,8 @@ public class WindowsCpuControlService : ICpuControlService
                 }
                 default: throw new ArgumentOutOfRangeException(nameof(_systemInfoService.Cpu.Manufacturer), _systemInfoService.Cpu.Manufacturer, "Unsupported cpu");
             }
+
+            CurrentPowerLimit = _newPowerLimit;
         }
     }
 

@@ -79,8 +79,8 @@ public class WindowsDisplayInfoService : IDisplayInfoService
 
     #endregion
     
-    public List<string> UniqueTargetScreenResolutions  { get; }
-    public List<int> UniqueTargetRefreshRates { get; }
+    public IReadOnlyCollection<string> UniqueTargetScreenResolutions  { get; }
+    public IReadOnlyCollection<int> UniqueTargetRefreshRates { get; }
 
     private string _targetDisplayName;
     private readonly ILogger<WindowsDisplayInfoService> _logger;
@@ -90,11 +90,13 @@ public class WindowsDisplayInfoService : IDisplayInfoService
         _logger = logger;
         _targetDisplayName = FindLaptopScreen();
         UniqueTargetScreenResolutions = GetSupportedResolutions(_targetDisplayName);
-        UniqueTargetRefreshRates = GetSupportedRefreshRates(_targetDisplayName)
+        
+        var supportedRefreshRates = GetSupportedRefreshRates(_targetDisplayName)
             .Distinct()
             .ToList();
-        UniqueTargetRefreshRates.Sort();
-        UniqueTargetRefreshRates.Reverse();
+        supportedRefreshRates.Sort();
+        supportedRefreshRates.Reverse();
+        UniqueTargetRefreshRates = supportedRefreshRates;
     }
 
     private List<string> GetSupportedResolutions(string targetDisplayName)

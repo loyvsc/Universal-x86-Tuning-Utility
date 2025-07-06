@@ -59,7 +59,7 @@ public class MainWindowViewModel : NotifyPropertyChangedBase
 
     private string _title;
     private bool _firstRun = true;
-    private List<GameLauncherItem> _gamesList;
+    private IReadOnlyCollection<GameLauncherItem> _gamesList;
 
     public MainWindowViewModel(ILogger<MainWindowViewModel> logger,
         ISystemInfoService systemInfoService,

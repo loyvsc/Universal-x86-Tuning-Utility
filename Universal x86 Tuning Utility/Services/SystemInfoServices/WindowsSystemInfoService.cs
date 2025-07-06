@@ -1298,11 +1298,11 @@ public class WindowsSystemInfoService : ISystemInfoService, IDisposable
                 RyzenFamily.StrixPoint => "Strix Point",
                 RyzenFamily.StrixPoint2 => "Strix Point 2 / Kraken",
                 RyzenFamily.StrixHalo => "Strix Halo",
-                _ => ""
+                _ => string.Empty
             };
         }
 
-        return "";
+        return string.Empty;
     }
 
     public string GetBigLITTLE()

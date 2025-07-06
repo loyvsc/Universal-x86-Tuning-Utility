@@ -5,8 +5,8 @@ namespace Universal_x86_Tuning_Utility.Services.DisplayInfoServices;
 
 public class LinuxDisplayInfoService : IDisplayInfoService
 {
-    public List<string> UniqueTargetScreenResolutions { get; }
-    public List<int> UniqueTargetRefreshRates { get; }
+    public IReadOnlyCollection<string> UniqueTargetScreenResolutions { get; }
+    public IReadOnlyCollection<int> UniqueTargetRefreshRates { get; }
     
     public void ApplySettings(int newHz)
     {

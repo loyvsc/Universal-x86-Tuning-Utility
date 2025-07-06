@@ -197,11 +197,11 @@ public class SystemInfoViewModel : NotifyPropertyChangedBase, IDisposable
         var ramCapacityAsGigabytes = _systemInfoService.Ram.Capacity / 1024 / 1024 / 1024;
         RamInfo = $"{ramCapacityAsGigabytes} GB {_systemInfoService.Ram.Type.ToString()} @ {_systemInfoService.Ram.Speed} MT/s";
         
-        if (_systemInfoService.Ram.Modules.Length > 1 &&
+        if (_systemInfoService.Ram.Modules.Count > 1 &&
             _systemInfoService.Ram.Modules
-                .All(module => module.Producer == _systemInfoService.Ram.Modules[0].Producer))
+                .All(module => module.Producer == _systemInfoService.Ram.Modules.ElementAt(0).Producer))
         {
-            RamProducer = _systemInfoService.Ram.Modules[0].Producer;
+            RamProducer = _systemInfoService.Ram.Modules.ElementAt(0).Producer;
         }
         else
         {
@@ -211,7 +211,7 @@ public class SystemInfoViewModel : NotifyPropertyChangedBase, IDisposable
         RamModel = string.Join('/', _systemInfoService.Ram.Modules.Select(module => module.Model));
         RamWidth = $"{_systemInfoService.Ram.Width} bit";
 
-        int modulesCount = _systemInfoService.Ram.Modules.Length;
+        int modulesCount = _systemInfoService.Ram.Modules.Count;
         RamSlots = $"{modulesCount} * {_systemInfoService.Ram.Width / modulesCount} bit";
 
         if (_systemInfoService.GetBatteryStatus() != BatteryStatus.NoSystemBattery)

@@ -102,7 +102,6 @@ public class AmdApuControlService : IAmdApuControlService
                         else if (currentClock < maxClock / 1.33) newClock = currentClock + 25;
                         else newClock = currentClock + 25;
                     }
-
                     else if (temperature > maxTemperature || gpuLoad < 87 || memClock < 550 || cpuClocks < minCpuClock)
                     {
                         if (currentClock > minClock)
