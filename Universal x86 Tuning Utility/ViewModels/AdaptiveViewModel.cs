@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using ApplicationCore.Enums;
+using ApplicationCore.Enums.Laptop;
 using ApplicationCore.Interfaces;
 using ApplicationCore.Models;
 using ApplicationCore.Utilities;
@@ -245,7 +247,7 @@ public class AdaptiveViewModel : NotifyPropertyChangedBase
 
         //CPUPower = (int)GetSensor.getCPUInfo(SensorType.Power, "Package");
 
-        if (_systemInfoService.RadeonGpuCount <= 0)
+        if (_systemInfoService.Gpus.Count(x => x.Manufacturer == GpuManufacturer.AMD) == 0)
         {
             GPULoad = _amdGpuService.GetGpuMetrics(0, AmdGpuSensor.GpuLoad);
             GPUClock = _amdGpuService.GetGpuMetrics(0, AmdGpuSensor.GpuClock);
@@ -459,15 +461,15 @@ public class AdaptiveViewModel : NotifyPropertyChangedBase
 
     private void Initialize()
     {
-        IsAsusPowerSettingsAvailable = _systemInfoService.LaptopInfo?.IsAsus == true;
+        IsAsusPowerSettingsAvailable = _systemInfoService.LaptopInfo?.Brand == LaptopBrand.ASUS;
         
-        if (_systemInfoService.RadeonGpuCount == 0)
+        if (_systemInfoService.Gpus.Count(x => x.Manufacturer == GpuManufacturer.AMD) == 0)
         {
             IsAmdApuTurboBoostOverdriveSettingsAvailable = false;
             IsRadeonGraphicsOptionsAvailable = false;
         }
 
-        IsNvidiaGraphicsOptionsAvailable = _systemInfoService.NvidiaGpuCount != 0;
+        IsNvidiaGraphicsOptionsAvailable = _systemInfoService.Gpus.Count(x => x.Manufacturer == GpuManufacturer.Nvidia) != 0;
         
         _gameLauncherService.ReSearchGames(true);
         ReloadGamesList();

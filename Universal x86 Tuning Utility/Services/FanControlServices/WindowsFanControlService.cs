@@ -37,7 +37,7 @@ public class WindowsFanControlService : IFanControlService
 
     public void UpdateAddresses()
     {
-        string path = $@"\Fan Configs\{_systemInfoService.Manufacturer.ToUpper()}_{_systemInfoService.Product.ToUpper()}.json";
+        string path = $@"\Fan Configs\{_systemInfoService.Manufacturer.Value.ToUpper()}_{_systemInfoService.Product.Value.ToUpper()}.json";
 
         if (File.Exists(path))
         {

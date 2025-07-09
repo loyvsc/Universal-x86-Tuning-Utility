@@ -12,6 +12,7 @@ namespace Universal_x86_Tuning_Utility.Services.PowerPlanServices;
 public class WindowsPowerPlanService : IPowerPlanService
 {
     private readonly ISystemInfoService _systemInfoService;
+    private readonly IBatteryInfoService _batteryInfoService;
     public event PowerModeChangedEventHandler PowerModeChanged;
     
     [DllImport("powrprof.dll", EntryPoint = "PowerSetActiveOverlayScheme")]
@@ -21,16 +22,17 @@ public class WindowsPowerPlanService : IPowerPlanService
     private const string HighPerformancePowerScheme = "DED574B5-45A0-4F42-8737-46345C09C238";
     private const string PowerSaverPowerScheme = "961CC777-2547-4F9D-8174-7D86181b8A7A";
 
-    public WindowsPowerPlanService(ISystemInfoService systemInfoService)
+    public WindowsPowerPlanService(ISystemInfoService systemInfoService, IBatteryInfoService batteryInfoService)
     {
         _systemInfoService = systemInfoService;
-        
+        _batteryInfoService = batteryInfoService;
+
         SystemEvents.PowerModeChanged += OnPowerModeChanged;
     }
 
     private void OnPowerModeChanged(object sender, Microsoft.Win32.PowerModeChangedEventArgs e)
     {
-        var batteryStatus = _systemInfoService.GetBatteryStatus();
+        var batteryStatus = _batteryInfoService.GetBatteryStatus();
         var currentPowerMode = e.Mode switch
         {
             PowerModes.Resume => PowerMode.Resume,

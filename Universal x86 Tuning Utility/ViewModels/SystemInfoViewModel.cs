@@ -166,21 +166,21 @@ public class SystemInfoViewModel : NotifyPropertyChangedBase, IDisposable
     private bool _isBatteryInfoAvailable;
     
     private readonly ISystemInfoService _systemInfoService;
+    private readonly IBatteryInfoService _batteryInfoService;
     private readonly DispatcherTimer _batteryInfoTimer;
     
-    public SystemInfoViewModel(ISystemInfoService systemInfoService)
+    public SystemInfoViewModel(ISystemInfoService systemInfoService, IBatteryInfoService batteryInfoService)
     {
         _systemInfoService = systemInfoService;
+        _batteryInfoService = batteryInfoService;
         _batteryInfoTimer = new DispatcherTimer
         {
             Interval = TimeSpan.FromSeconds(2)
         };
 
         CpuInfo = _systemInfoService.Cpu;
-        
-        CpuCoresInfo = CpuInfo.LogicalCoresCount == CpuInfo.CoresCount 
-            ? CpuInfo.CoresCount.ToString() 
-            : _systemInfoService.GetBigLITTLE();
+
+        CpuCoresInfo = CpuInfo.BigLITTLEInfo ?? CpuInfo.CoresCount.ToString();
             
         var l1Size = _systemInfoService.Cpu.L1Size / 1024;
         CpuL1Cache = $"{l1Size.ToString("0.##")} MB";
@@ -214,19 +214,19 @@ public class SystemInfoViewModel : NotifyPropertyChangedBase, IDisposable
         int modulesCount = _systemInfoService.Ram.Modules.Count;
         RamSlots = $"{modulesCount} * {_systemInfoService.Ram.Width / modulesCount} bit";
 
-        if (_systemInfoService.GetBatteryStatus() != BatteryStatus.NoSystemBattery)
+        if (_batteryInfoService.GetBatteryStatus() != BatteryStatus.NoSystemBattery)
         {
             IsBatteryInfoAvailable = true;
             try
             {
-                BatteryHealth = _systemInfoService.GetBatteryHealth().ToString("0.##%");
-                BatteryCycle = _systemInfoService.GetBatteryCycle().ToString();
+                BatteryHealth = _batteryInfoService.GetBatteryHealth().ToString("0.##%");
+                BatteryCycle = _batteryInfoService.GetBatteryCycle().ToString();
 
-                var fullChargeCapacity = _systemInfoService.ReadFullChargeCapacity();
-                var designCapacity = _systemInfoService.ReadDesignCapacity();
+                var fullChargeCapacity = _batteryInfoService.ReadFullChargeCapacity();
+                var designCapacity = _batteryInfoService.ReadDesignCapacity();
                 BatteryCapacity = $"Full Charge: {fullChargeCapacity} mAh | Design: {designCapacity} mAh";
 
-                BatteryChargeRate = (_systemInfoService.GetBatteryRate() / 1000).ToString("0.##W");
+                BatteryChargeRate = (_batteryInfoService.GetBatteryRate() / 1000).ToString("0.##W");
                 _batteryInfoTimer.Tick += OnBatteryInfoTimerTick;
                 _batteryInfoTimer.Start();
             }
@@ -239,7 +239,7 @@ public class SystemInfoViewModel : NotifyPropertyChangedBase, IDisposable
 
     private void OnBatteryInfoTimerTick(object? sender, EventArgs e)
     {
-        var batteryRate = _systemInfoService.GetBatteryRate() / 1000;
+        var batteryRate = _batteryInfoService.GetBatteryRate() / 1000;
         BatteryChargeRate = batteryRate.ToString("0.##W");
     }
 
