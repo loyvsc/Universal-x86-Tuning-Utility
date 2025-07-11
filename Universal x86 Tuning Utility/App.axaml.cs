@@ -91,7 +91,7 @@ public class App : Application
             SplatRegistrations.RegisterLazySingleton<ISystemInfoService, WindowsSystemInfoService>();
             SplatRegistrations.RegisterLazySingleton<IUpdateService, UpdateService>();
             SplatRegistrations.RegisterLazySingleton<IUpdateInstallerService, WindowsUpdateInstallerService>();
-            SplatRegistrations.RegisterLazySingleton<IPlatformServiceAccessor, DefaultPlatformServiceAccessor>();
+            SplatRegistrations.RegisterLazySingleton<IPlatformServiceAccessor, PlatformServiceAccessor>();
             SplatRegistrations.RegisterLazySingleton<IBatteryInfoService, WindowsBatteryInfoService>();
         }
 
