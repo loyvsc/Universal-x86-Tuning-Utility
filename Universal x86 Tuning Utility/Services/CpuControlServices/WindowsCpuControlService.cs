@@ -73,7 +73,7 @@ public class WindowsCpuControlService : ICpuControlService
                                 $"--tctl-temp={maxTemperature} --cHTC-temp={maxTemperature} --apu-skin-temp={maxTemperature} --stapm-limit={tdp}  --fast-limit={tdp} --stapm-time=64 --slow-limit={tdp} --slow-time=128 --vrm-current=300000 --vrmmax-current=300000 --vrmsoc-current=300000 --vrmsocmax-current=300000 ";
                             // Save new TDP to avoid unnecessary reapplies
                             _lastPowerLimit = _newPowerLimit;
-                            _amdApuControlService.CurrentPowerLimit = _newPowerLimit;
+                            _amdApuControlService.PowerLimit = _newPowerLimit;
                         }
                     }
                     else if (_systemInfoService.Cpu.ProcessorType == ProcessorType.Desktop)

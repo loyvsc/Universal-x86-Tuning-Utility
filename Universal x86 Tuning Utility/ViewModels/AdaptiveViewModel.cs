@@ -341,7 +341,8 @@ public class AdaptiveViewModel : NotifyPropertyChangedBase
     }
 
     private int _adaptiveModeTickCount;
-    private string _lastCpu, _lastCo, _lastiGPU;
+    private string _lastCpu, _lastCo;
+    private int _lastiGPUClock;
 
     private async void AdaptiveModeTick(object? sender, EventArgs e)
     {
@@ -393,11 +394,11 @@ public class AdaptiveViewModel : NotifyPropertyChangedBase
                 _lastCo = _cpuControlService.CoCommand;
             }
 
-            if (!string.IsNullOrEmpty(_amdApuControlService.Commmand) &&
-                CurrentPreset.IsGfx && _amdApuControlService.Commmand != _lastiGPU)
+            if (_amdApuControlService.IsAvailable &&
+                CurrentPreset.IsGfx && _amdApuControlService.Clock != _lastiGPUClock)
             {
-                commandString += _amdApuControlService.Commmand;
-                _lastiGPU = _amdApuControlService.Commmand;
+                commandString += $"--gfx-clk={_amdApuControlService.Clock} ";
+                _lastiGPUClock = _amdApuControlService.Clock;
             }
 
             if (CurrentPreset.IsRadeonGraphics)
