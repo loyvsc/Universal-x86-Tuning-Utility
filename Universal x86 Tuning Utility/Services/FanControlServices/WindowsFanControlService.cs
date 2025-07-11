@@ -3,7 +3,7 @@ using System.IO;
 using System.Text.Json;
 using ApplicationCore.Interfaces;
 using ApplicationCore.Models;
-using Universal_x86_Tuning_Utility.Services.Amd;
+using Universal_x86_Tuning_Utility.Services.Amd.Windows;
 
 namespace Universal_x86_Tuning_Utility.Services.FanControlServices;
 

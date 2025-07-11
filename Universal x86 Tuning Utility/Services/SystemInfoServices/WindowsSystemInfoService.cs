@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Management;
 using System.Runtime.Intrinsics.X86;
@@ -13,7 +12,7 @@ using ApplicationCore.Models;
 using ApplicationCore.Models.LaptopInfo;
 using DynamicData;
 using Microsoft.Extensions.Logging;
-using Universal_x86_Tuning_Utility.Services.Amd;
+using Universal_x86_Tuning_Utility.Services.Amd.Windows;
 using Ols = OpenLibSys_Mem.Ols;
 
 namespace Universal_x86_Tuning_Utility.Services.SystemInfoServices;

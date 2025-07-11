@@ -8,7 +8,7 @@ using ApplicationCore.Interfaces;
 using ApplicationCore.Models.LaptopInfo;
 using Microsoft.Extensions.Logging;
 using Universal_x86_Tuning_Utility.Properties;
-using Universal_x86_Tuning_Utility.Services.Amd;
+using Universal_x86_Tuning_Utility.Services.Amd.Windows;
 
 namespace Universal_x86_Tuning_Utility.Services.RyzenAdj;
 
@@ -189,11 +189,11 @@ public class RyzenAdjService : IRyzenAdjService
                             uint ryzenAdjCommandValue = Convert.ToUInt32(ryzenAdjCommandValueString);
                             if (ryzenAdjCommandValue <= 0 && !ryzenAdjCommandString.Contains("co"))
                             {
-                                SMUCommands.ApplySettings(ryzenAdjCommandString, 0x0);
+                                WindowsSMUCommands.ApplySettings(ryzenAdjCommandString, 0x0);
                             }
                             else
                             {
-                                SMUCommands.ApplySettings(ryzenAdjCommandString, ryzenAdjCommandValue);
+                                WindowsSMUCommands.ApplySettings(ryzenAdjCommandString, ryzenAdjCommandValue);
                             }
 
                             Task.Delay(50);
@@ -382,6 +382,6 @@ public class RyzenAdjService : IRyzenAdjService
 
     public void Dispose()
     {
-        SMUCommands.RyzenAccess.Dispose();
+        WindowsSMUCommands.RyzenAccess.Dispose();
     }
 }
