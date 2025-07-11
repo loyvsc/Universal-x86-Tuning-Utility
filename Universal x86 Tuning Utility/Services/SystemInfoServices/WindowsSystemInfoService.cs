@@ -53,7 +53,7 @@ public class WindowsSystemInfoService : ISystemInfoService, IDisposable
         
         _installDeviceEventWatcher = new ManagementEventWatcher("SELECT * FROM Win32_DeviceChangeEvent WHERE EventType = 2");
         _installDeviceEventWatcher.EventArrived += OnNewDeviceInstalled;
-        _uninstallDeviceEventWatcher = new ManagementEventWatcher("SELECT * FROM Win32_DeviceChangeEvent WHERE EventType = 2");
+        _uninstallDeviceEventWatcher = new ManagementEventWatcher("SELECT * FROM Win32_DeviceChangeEvent WHERE EventType = 3");
         _uninstallDeviceEventWatcher.EventArrived += OnDeviceUninstalled;
 
         Manufacturer = new Lazy<string>(() =>
