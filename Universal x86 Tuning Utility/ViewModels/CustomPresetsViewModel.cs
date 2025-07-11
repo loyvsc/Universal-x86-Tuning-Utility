@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using ApplicationCore.Enums;
+using ApplicationCore.Enums.Display;
 using ApplicationCore.Enums.Laptop;
 using ApplicationCore.Interfaces;
 using ApplicationCore.Models;
@@ -13,13 +14,14 @@ using DesktopNotifications;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using Universal_x86_Tuning_Utility.Extensions;
+using Universal_x86_Tuning_Utility.Models;
 using Universal_x86_Tuning_Utility.Properties;
 using AmdPowerProfile = ApplicationCore.Models.AmdPowerProfile;
 using PowerMode = ApplicationCore.Models.PowerMode;
 
 namespace Universal_x86_Tuning_Utility.ViewModels;
 
-public class CustomPresetsViewModel : NotifyPropertyChangedBase
+public class CustomPresetsViewModel : NotifyPropertyChangedBase, IDisposable
 {
     public ICommand ApplyPresetCommand { get; }
     public ICommand SavePresetCommand { get; }
@@ -66,10 +68,22 @@ public class CustomPresetsViewModel : NotifyPropertyChangedBase
         set => SetValue(ref _isChangeRefreshRateAvailable, value);
     }
 
-    public List<string> RefreshRates
+    public EnhancedObservableCollection<DisplayModel> AvailableDisplays
     {
-        get => _refreshRates;
-        set => SetValue(ref _refreshRates, value);
+        get => _availableDisplays;
+        set => SetValue(ref _availableDisplays, value);
+    }
+
+    public DisplayModel SelectedDisplay
+    {
+        get => _selectedDisplay;
+        set
+        {
+            if (SetValue(ref _selectedDisplay, value))
+            {
+                SelectedPreset.DisplayIdentifier = value.Identifier;
+            }
+        }
     }
 
     public bool IsIntelSettingsAvailable
@@ -238,7 +252,6 @@ public class CustomPresetsViewModel : NotifyPropertyChangedBase
     private AsusPowerProfile _selectedAsusPowerProfile;
     private Preset _currentPreset;
     private List<Preset> _availablePresets;
-    private List<string> _refreshRates;
     private bool _isUndoActionAvailable;
     private bool _isIntelSettingsAvailable;
     private bool _isAmdCpuTuneSettingAvailable;
@@ -274,6 +287,8 @@ public class CustomPresetsViewModel : NotifyPropertyChangedBase
     private readonly IDisplayInfoService _displayInfoService;
     private readonly IIntelManagementService _intelManagementService;
     private readonly IASUSWmiService _asusWmiService;
+    private EnhancedObservableCollection<DisplayModel> _availableDisplays;
+    private DisplayModel _selectedDisplay;
 
     #endregion
 
@@ -332,6 +347,23 @@ public class CustomPresetsViewModel : NotifyPropertyChangedBase
         };
 
         Initialize();
+        
+        _displayInfoService.DisplayAttached += DisplayInfoServiceOnDisplayAttached;
+        _displayInfoService.DisplayRemoved += DisplayInfoServiceOnDisplayRemoved;
+    }
+
+    private void DisplayInfoServiceOnDisplayRemoved(Display display)
+    {
+        var displayToRemove = AvailableDisplays.FirstOrDefault(x => x.Identifier == display.Identifier);
+        if (displayToRemove != null)
+        {
+            AvailableDisplays.Remove(displayToRemove);
+        }
+    }
+
+    private void DisplayInfoServiceOnDisplayAttached(Display display)
+    {
+        AvailableDisplays.Add(new DisplayModel(display));
     }
 
     private void Initialize()
@@ -371,14 +403,15 @@ public class CustomPresetsViewModel : NotifyPropertyChangedBase
 
         IsRadeonGpuSettingsAvailable = _systemInfoService.Gpus.Count(x => x.Manufacturer == GpuManufacturer.AMD) != 0;
         IsNvidiaGpuSettingsAvailable = _systemInfoService.Gpus.Count(x => x.Manufacturer == GpuManufacturer.Nvidia) != 0;
-
-        if (_displayInfoService.UniqueTargetRefreshRates.Count > 1)
+        
+        if (_displayInfoService.Displays.Value.Any(x => x.SupportedRefreshRates.Count > 1))
         {
             IsChangeRefreshRateAvailable = true;
-
-            RefreshRates.Add("System Controlled");
-            foreach (var refreshRate in _displayInfoService.UniqueTargetRefreshRates)
-                RefreshRates.Add($"{refreshRate} Hz");
+            
+            AvailableDisplays = new EnhancedObservableCollection<DisplayModel>(_displayInfoService.Displays.Value.Select(x => new DisplayModel(x)));
+            SelectedDisplay =
+                AvailableDisplays.FirstOrDefault(x =>
+                    x.SupportedOutputTechnology == DisplayOutputTechnology.Internal) ?? AvailableDisplays[0];
         }
         else
         {
@@ -657,7 +690,7 @@ public class CustomPresetsViewModel : NotifyPropertyChangedBase
 
         if (IsChangeRefreshRateAvailable && SelectedPreset.DisplayHz > 0)
         {
-            commands.Add($"--Refresh-Rate={RefreshRates[SelectedPreset.DisplayHz - 1]}");
+            commands.Add($"--Refresh-Rate={SelectedPreset.DisplayIdentifier}:::{SelectedPreset.DisplayHz}");
         }
 
         if (SelectedPreset.PowerMode.PowerPlan != PowerPlan.SystemControlled)
@@ -952,5 +985,11 @@ public class CustomPresetsViewModel : NotifyPropertyChangedBase
         }
         
         return string.Join(' ', commands);
+    }
+
+    public void Dispose()
+    {
+        _displayInfoService.DisplayAttached -= DisplayInfoServiceOnDisplayAttached;
+        _displayInfoService.DisplayRemoved -= DisplayInfoServiceOnDisplayRemoved;
     }
 }

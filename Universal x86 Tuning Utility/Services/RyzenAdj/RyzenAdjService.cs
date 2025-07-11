@@ -89,7 +89,23 @@ public class RyzenAdjService : IRyzenAdjService
                         }
                         else if (ryzenAdjCommandString.Contains("Refresh-Rate"))
                         {
-                            _displayInfoService.ApplySettings(Convert.ToInt32(ryzenAdjCommandValueString));
+                            var values = ryzenAdjCommandValueString.Split(":::");
+                            if (values.Length == 2)
+                            {
+                                var targetDisplayIdentifier = values[0];
+
+                                if (int.TryParse(values[1], out var targetHz))
+                                {
+                                    try
+                                    {
+                                        _displayInfoService.ApplySettings(targetDisplayIdentifier, targetHz);
+                                    }
+                                    catch
+                                    {
+                                        // Ignored
+                                    }
+                                }
+                            }
                         }
                         else if (ryzenAdjCommandString.Contains("ADLX"))
                         {
