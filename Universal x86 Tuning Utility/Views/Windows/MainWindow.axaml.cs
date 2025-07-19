@@ -55,17 +55,16 @@ public partial class MainWindow : Window, IDisposable
 
         if (e.InvokedItemContainer is NavigationViewItem nvi)
         {
-            NavigationService.Instance.NavigateFromContext(nvi.Tag);
+            NavigationService.Instance?.NavigateFromContext(nvi.Tag);
         }
     }
 
     private void MainWindowLoaded(object? sender, RoutedEventArgs e)
     {
-        NavigationService.Instance.SetFrame(FrameView);
+        NavigationService.Instance?.SetFrame(FrameView);
         if (DataContext is MainWindowViewModel viewModel)
         {
-            FrameView.NavigationPageFactory = viewModel.NavigationPageFactory;
-            NavigationService.Instance.NavigateFromContext(viewModel.NavigationItems[0]);
+            NavigationService.Instance?.NavigateFromContext(viewModel.NavigationItems[0]);
             if (Settings.Default.StartMini)
             {
                 WindowState = WindowState.Minimized;

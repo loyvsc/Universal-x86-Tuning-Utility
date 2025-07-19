@@ -1,13 +1,12 @@
 using System;
 using ApplicationCore.Utilities;
-using FluentAvalonia.FluentIcons;
 
 namespace Universal_x86_Tuning_Utility.ViewModels;
 
 public class NavigationViewModel : NotifyPropertyChangedBase
 {
     private bool _isInitializing;
-    private FluentIconSymbol _iconSymbol;
+    private object _iconSymbol;
     private string _title;
     private object? _dataContext;
 
@@ -23,7 +22,7 @@ public class NavigationViewModel : NotifyPropertyChangedBase
         set => SetValue(ref _title, value);
     }
 
-    public FluentIconSymbol IconSymbol
+    public object IconSymbol
     {
         get => _iconSymbol;
         set => SetValue(ref _iconSymbol, value);

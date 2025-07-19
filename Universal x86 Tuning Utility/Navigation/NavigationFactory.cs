@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
 using FluentAvalonia.UI.Controls;
+using Splat;
 using Universal_x86_Tuning_Utility.ViewModels;
 using Universal_x86_Tuning_Utility.Views.Pages;
 
@@ -10,12 +11,10 @@ namespace Universal_x86_Tuning_Utility.Navigation;
 
 public class NavigationFactory : INavigationPageFactory
 {
-    public NavigationFactory(MainWindowViewModel owner)
+    public NavigationFactory()
     {
-        Owner = owner;
+        
     }
-
-    public MainWindowViewModel Owner { get; }
 
     public Control GetPage(Type srcType)
     {
@@ -24,6 +23,11 @@ public class NavigationFactory : INavigationPageFactory
 
     public Control GetPageFromObject(object target)
     {
+        if (target is NavigationViewModel navigationViewModel)
+        {
+            navigationViewModel.DataContext = Locator.Current.GetService(navigationViewModel.ViewModelType)!;
+            target = navigationViewModel.DataContext;
+        }
         return target switch
         {
             DashboardViewModel => new DashboardPage() { DataContext = target },

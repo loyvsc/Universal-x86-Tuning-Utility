@@ -8,7 +8,6 @@ using Avalonia.Threading;
 using DesktopNotifications;
 using ReactiveUI;
 using Universal_x86_Tuning_Utility.Extensions;
-using Universal_x86_Tuning_Utility.Services.GameLauncherServices;
 using Settings = Universal_x86_Tuning_Utility.Properties.Settings;
 
 namespace Universal_x86_Tuning_Utility.ViewModels;

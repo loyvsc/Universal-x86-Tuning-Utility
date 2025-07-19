@@ -2,12 +2,13 @@ using System;
 using ApplicationCore.Interfaces;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Media.Animation;
+using Splat;
 
 namespace Universal_x86_Tuning_Utility.Navigation;
 
 public class NavigationService : INavigationService
 {
-    public static NavigationService Instance { get; } = new NavigationService();
+    public static NavigationService? Instance => Locator.Current.GetService<INavigationService>() as NavigationService;
 
     private Frame _frame;
     

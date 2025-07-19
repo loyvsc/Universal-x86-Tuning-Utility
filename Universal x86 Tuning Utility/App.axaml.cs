@@ -1,10 +1,10 @@
 ﻿using System;
 using System.IO;
-using Universal_x86_Tuning_Utility.Properties;
-using System.Configuration;
+using Accord.IO;
 using ApplicationCore.Interfaces;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Notifications;
 using Avalonia.Markup.Xaml;
 using DAL.Services;
 using DesktopNotifications;
@@ -16,31 +16,15 @@ using Splat.Serilog;
 using Universal_x86_Tuning_Utility.Extensions;
 using Universal_x86_Tuning_Utility.Helpers;
 using Universal_x86_Tuning_Utility.Interfaces;
+using Universal_x86_Tuning_Utility.Navigation;
+using Universal_x86_Tuning_Utility.Properties;
 using Universal_x86_Tuning_Utility.Services;
-using Universal_x86_Tuning_Utility.Services.Asus;
-using Universal_x86_Tuning_Utility.Services.BatteryServices;
-using Universal_x86_Tuning_Utility.Services.CliServices;
-using Universal_x86_Tuning_Utility.Services.CpuControlServices;
-using Universal_x86_Tuning_Utility.Services.DisplayInfoServices;
-using Universal_x86_Tuning_Utility.Services.FanControlServices;
-using Universal_x86_Tuning_Utility.Services.GameLauncherServices;
-using Universal_x86_Tuning_Utility.Services.GPUs.AMD;
-using Universal_x86_Tuning_Utility.Services.GPUs.AMD.Apu;
-using Universal_x86_Tuning_Utility.Services.GPUs.NVIDIA;
-using Universal_x86_Tuning_Utility.Services.Intel;
-using Universal_x86_Tuning_Utility.Services.PowerPlanServices;
+using Universal_x86_Tuning_Utility.Services.GPUs;
 using Universal_x86_Tuning_Utility.Services.PresetServices;
-using Universal_x86_Tuning_Utility.Services.RyzenAdj;
-using Universal_x86_Tuning_Utility.Services.SensorsServices;
-using Universal_x86_Tuning_Utility.Services.StatisticsServices;
-using Universal_x86_Tuning_Utility.Services.StressTestServices;
-using Universal_x86_Tuning_Utility.Services.SystemBootServices;
-using Universal_x86_Tuning_Utility.Services.SystemInfoServices;
-using Universal_x86_Tuning_Utility.Services.UpdateInstallerServices;
 using Universal_x86_Tuning_Utility.ViewModels;
-using Universal_x86_Tuning_Utility.Views.Pages;
 using Universal_x86_Tuning_Utility.Views.Windows;
 using Application = Avalonia.Application;
+using INotificationManager = DesktopNotifications.INotificationManager;
 
 namespace Universal_x86_Tuning_Utility;
 
@@ -48,14 +32,14 @@ public class App : Application
 {
     private ILogger<App> _logger;
     private IClassicDesktopStyleApplicationLifetime _desktopApplicationLifetime;
-    
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
-        
+
         Locator.CurrentMutable.UseSerilogFullLogger();
         Locator.CurrentMutable.UseMicrosoftExtensionsLoggingWithWrappingFullLogger(new SerilogLoggerFactory());
-        
+
         //Viewmodels
         SplatRegistrations.RegisterLazySingleton<AdaptiveViewModel>();
         SplatRegistrations.RegisterLazySingleton<AutomationsViewModel>();
@@ -69,31 +53,15 @@ public class App : Application
         SplatRegistrations.RegisterLazySingleton<SettingsViewModel>();
         SplatRegistrations.RegisterLazySingleton<SystemInfoViewModel>();
 
-        if (OperatingSystem.IsWindows())
-        {
-            SplatRegistrations.RegisterLazySingleton<IASUSWmiService, WindowsAsusWmiService>();
-            SplatRegistrations.RegisterLazySingleton<ICliService, WindowsCliService>();
-            SplatRegistrations.RegisterLazySingleton<ICpuControlService, WindowsCpuControlService>();
-            SplatRegistrations.RegisterLazySingleton<IDisplayInfoService, WindowsDisplayInfoService>();
-            SplatRegistrations.RegisterLazySingleton<IFanControlService, WindowsFanControlService>();
-            SplatRegistrations.RegisterLazySingleton<IGameLauncherService, WindowsGameLauncherService>();
-            SplatRegistrations.RegisterLazySingleton<IAmdApuControlService, AmdApuControlService>();
-            SplatRegistrations.RegisterLazySingleton<IAmdGpuService, WindowsAmdGpuService>();
-            SplatRegistrations.RegisterLazySingleton<INvidiaGpuService, WindowsNvidiaGpuService>();
-            SplatRegistrations.RegisterLazySingleton<IIntelManagementService, WindowsIntelManagementService>();
-            SplatRegistrations.RegisterLazySingleton<IPowerPlanService, WindowsPowerPlanService>();
-            SplatRegistrations.RegisterLazySingleton<IPresetServiceFactory, PresetServiceFactory>();
-            SplatRegistrations.RegisterLazySingleton<IRyzenAdjService, RyzenAdjService>();
-            SplatRegistrations.RegisterLazySingleton<ISensorsService, WindowsSensorsService>();
-            SplatRegistrations.RegisterLazySingleton<IRtssService, WindowsRtssService>();
-            SplatRegistrations.RegisterLazySingleton<IStressTestService, WindowsStressTestService>();
-            SplatRegistrations.RegisterLazySingleton<ISystemBootService, WindowsSystemBootService>();
-            SplatRegistrations.RegisterLazySingleton<ISystemInfoService, WindowsSystemInfoService>();
-            SplatRegistrations.RegisterLazySingleton<IUpdateService, UpdateService>();
-            SplatRegistrations.RegisterLazySingleton<IUpdateInstallerService, WindowsUpdateInstallerService>();
-            SplatRegistrations.RegisterLazySingleton<IPlatformServiceAccessor, PlatformServiceAccessor>();
-            SplatRegistrations.RegisterLazySingleton<IBatteryInfoService, WindowsBatteryInfoService>();
-        }
+        SplatRegistrations.RegisterLazySingleton<IAdaptivePresetService, AdaptivePresetService>();
+        SplatRegistrations.RegisterLazySingleton<IGameDataService, GameDataService>();
+        SplatRegistrations.RegisterLazySingleton<IPremadePresets, PremadePresets>();
+        SplatRegistrations.RegisterLazySingleton<IPresetService, PresetService>();
+        SplatRegistrations.RegisterLazySingleton<IPresetServiceFactory, PresetServiceFactory>();
+        SplatRegistrations.RegisterLazySingleton<INavigationService, NavigationService>();
+        SplatRegistrations.RegisterLazySingleton<IUpdateService, UpdateService>();
+        SplatRegistrations.RegisterLazySingleton<IPlatformServiceAccessor, PlatformServiceAccessor>();
+        SplatRegistrations.RegisterLazySingleton<IAmdApuControlService, AmdApuControlService>();
 
         SplatRegistrations.SetupIOC();
     }
@@ -129,7 +97,6 @@ public class App : Application
                 {
                     try
                     {
-                        Settings.Default.Upgrade();
                         Settings.Default.SettingsUpgradeRequired = false;
                         Settings.Default.Save();
                     }
@@ -145,7 +112,7 @@ public class App : Application
                 File.Delete(filename);
                 Settings.Default.Reload();
             }
-            
+
             // todo: refact updatehelper to https://learn.microsoft.com/en-us/windows/win32/api/wininet/nf-wininet-internetgetconnectedstate
             if (UpdateHelper.IsInternetAvailable() && Settings.Default.UpdateCheck)
             {
@@ -157,13 +124,14 @@ public class App : Application
                 {
                     var notificationService = Locator.Current.GetService<INotificationManager>()!;
                     await notificationService.ShowTextNotification(
-                        title: "New Update Available!", 
-                        text: "Head to the settings menu to easily download the new Universal x86 Tuning Utility update!");
+                        title: "New Update Available!",
+                        text:
+                        "Head to the settings menu to easily download the new Universal x86 Tuning Utility update!");
                 }
             }
         }
         catch (Exception ex)
-        { 
+        {
             _logger.LogCritical(ex, "Failed to build and start a host");
         }
     }

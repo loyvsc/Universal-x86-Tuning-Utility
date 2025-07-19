@@ -50,6 +50,7 @@
         </ui:NavigationView>
         <!--  We display our pages inside this element.  -->
         <ui:Frame Grid.Column="1"
-                  Name="FrameView" />
+                  Name="FrameView" 
+                  NavigationPageFactory="{Binding NavigationPageFactory}"/>
     </Grid>
 </Window>

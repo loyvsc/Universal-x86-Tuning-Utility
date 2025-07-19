@@ -21,8 +21,6 @@ using Universal_x86_Tuning_Utility.Extensions;
 using Universal_x86_Tuning_Utility.Navigation;
 using Universal_x86_Tuning_Utility.Properties;
 using Universal_x86_Tuning_Utility.Services.PresetServices;
-using Universal_x86_Tuning_Utility.Services.RyzenAdj;
-using Universal_x86_Tuning_Utility.Services.SuperResolutionServices.Windows;
 using PowerMode = ApplicationCore.Enums.PowerMode;
 using PowerModeChangedEventArgs = ApplicationCore.Events.PowerModeChangedEventArgs;
 
